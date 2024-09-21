@@ -20,7 +20,7 @@ def generate_data(tokenizer):
         a = tokenizer.decode(a)[0]
         b = tokenizer.decode(b)[0]
         c = tokenizer.decode(c)[0]
-        data.append([consts.EOS, a, consts.DIV, b, consts.EQ, c , consts.EOS])
+        data.append([consts.EOS, a, consts.DIV, b, consts.EQ, c, consts.EOS])
     return np.array(data)
 
 
@@ -39,7 +39,7 @@ class Tokenizer:
         if isinstance(ids, int):
             ids = [ids]
         return [self.id_to_symbol[id] for id in ids]
-    
+
     @property
     def vocab_size(self):
         return len(self.symbol_to_id)
@@ -50,7 +50,7 @@ class BinaryDivisionModDataset(Dataset):
     def __init__(self, tokenizer, data):
         self.tokenizer = tokenizer
         self.data = data
-    
+
     def __len__(self):
         return len(self.data)
 

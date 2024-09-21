@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+model_epoch_*.pth
+
 # Distribution / packaging
 .Python
 build/

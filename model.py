@@ -25,7 +25,7 @@ class TransformerModel(nn.Module):
         self.embedding = nn.Embedding(vocab_size, model_dim)
         self.pos_encoder = PositionalEncoding(model_dim)
         # Weirdly, the paper mentions a " standard decoder-only transformer Vaswani et al. 
-        # (2017) with causal attention masking". This is implemented as a transformer encoder
+        # (2017) with causal attention masking". This is implemented as a transformer ENCODER
         # in pytorch, so we use that.
         self.transformer_encoder = nn.TransformerEncoder(
             encoder_layer=nn.TransformerEncoderLayer(model_dim, nhead, dim_feedforward=512, batch_first=True, dropout=0),
