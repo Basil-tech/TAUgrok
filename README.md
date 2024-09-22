@@ -34,8 +34,8 @@ you would like to view figures for, and run the full notebook.
 
 Example figure from running the example line in the cli section:
 
-![image](/assets/div_lr_0.0001_seed_42_optim_steps_100000.png)
-
+[<img src="./assets/div_lr_0.0001_seed_42_optim_steps_100000.png" width="630"/>](./assets/div_lr_0.0001_seed_42_optim_steps_100000.png)
+[<img src="./assets/add_lr_0.0001_seed_42_optim_steps_100000.png" width="250" height="250"/>](./assets/add_lr_0.0001_seed_42_optim_steps_100000.png)
 
 ### Technical details
 The projects runs smoothly on machines with GPUs (reproduced on RTX 4090), it was not checked on machines with CPU only.
