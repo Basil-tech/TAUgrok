@@ -6,9 +6,7 @@ import torch
 import numpy as np
 
 
-def generate_data(tokenizer):
-    # keeping the raw dataset maybe to reproduce
-    # the nice operation tables.
+def _gen_div_data(tokenizer):
     data = []
     pairs = product(range(consts.P), repeat=2)
     for a, b in pairs:
@@ -22,6 +20,35 @@ def generate_data(tokenizer):
         c = tokenizer.decode(c)[0]
         data.append([consts.EOS, a, consts.DIV, b, consts.EQ, c, consts.EOS])
     return np.array(data)
+
+
+def _gen_add_data(tokenizer):
+    data = []
+    pairs = product(range(consts.P), repeat=2)
+    for a, b in pairs:
+        c = (a + b) % consts.P
+        a = tokenizer.decode(a)[0]
+        b = tokenizer.decode(b)[0]
+        c = tokenizer.decode(c)[0]
+        data.append([consts.EOS, a, consts.ADD, b, consts.EQ, c, consts.EOS])
+    return np.array(data)
+
+
+def generate_data(tokenizer, operation = 'div'):
+
+    # keeping the raw dataset maybe to reproduce
+    # the nice operation tables.
+
+    if operation == 'div':
+        data = _gen_div_data(tokenizer)
+
+    elif operation == 'add':
+        data = _gen_add_data(tokenizer)
+
+    else:
+        raise ValueError('Operation not supported')
+
+    return data
 
 
 class Tokenizer:
@@ -45,7 +72,7 @@ class Tokenizer:
         return len(self.symbol_to_id)
 
 
-class BinaryDivisionModDataset(Dataset):
+class OperationModDataset(Dataset):
 
     def __init__(self, tokenizer, data):
         self.tokenizer = tokenizer

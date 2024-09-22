@@ -9,7 +9,7 @@ import torch.optim as optim
 from pathlib import Path
 from torch.utils.data import DataLoader
 from data import Tokenizer
-from data import BinaryDivisionModDataset
+from data import OperationModDataset
 from data import generate_data
 from model import TransformerModel
 
@@ -28,13 +28,13 @@ def train(model, train_loader, optimizer, loss_f, device):
     total_loss = 0
     total_acc = 0
 
-    for batch, (x, y) in enumerate(train_loader):
+    for x, y in train_loader:
         x, y = x.to(device), y.to(device)
         output = model(x)
         # output is (batch, seq_len, vocab_size), y is (batch, seq_len)
         # in the paper - "calculated loss and accuracy only on the answer part of the equation"
-        # answer idx is 5.
-        # the mask at idx 4 is [0, 0, 0, 0,
+        # answer idx is 5 in the sequence, therefore we want index 4 from the output, since
+        # the mask at idx 4 hides the answer part.
         answer_pred = output[:, 4, :]
         answer_targets = y[:, 5]
 
@@ -69,7 +69,14 @@ def validate(model, val_loader, loss_f, device):
     return total_loss / len(val_loader), total_acc / len(val_loader)
 
 
-def main(lr=1e-5, seed=42, optim_steps=100000, save_models=False, save_metrics=False):
+def main(
+    lr=1e-5,
+    seed=42,
+    optim_steps=100000,
+    save_models=False,
+    save_metrics=False,
+    operation="div",
+):
 
     # set seed for all
     torch.manual_seed(seed)
@@ -80,13 +87,13 @@ def main(lr=1e-5, seed=42, optim_steps=100000, save_models=False, save_metrics=F
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     tokenizer = Tokenizer()
-    full_dataset = generate_data(tokenizer)
+    full_dataset = generate_data(tokenizer, operation)
 
     np.random.shuffle(full_dataset)
     split_idx = len(full_dataset) // 2
 
-    train_dataset = BinaryDivisionModDataset(tokenizer, full_dataset[:split_idx])
-    val_dataset = BinaryDivisionModDataset(tokenizer, full_dataset[split_idx:])
+    train_dataset = OperationModDataset(tokenizer, full_dataset[:split_idx])
+    val_dataset = OperationModDataset(tokenizer, full_dataset[split_idx:])
 
     bs = min(512, len(train_dataset) // 2)  # A.1.2 from the paper
     train_loader = DataLoader(train_dataset, batch_size=bs, shuffle=True)
@@ -109,7 +116,7 @@ def main(lr=1e-5, seed=42, optim_steps=100000, save_models=False, save_metrics=F
     model_metrics = []
 
     n_epochs = optim_steps // len(train_loader)
-    run_name = f"lr_{lr}_seed_{seed}_optim_steps_{optim_steps}"
+    run_name = f"{operation}_lr_{lr}_seed_{seed}_optim_steps_{optim_steps}"
 
     if save_metrics or save_models:
         # create artifacts dirt
@@ -151,6 +158,7 @@ def main(lr=1e-5, seed=42, optim_steps=100000, save_models=False, save_metrics=F
 
 
 if __name__ == "__main__":
+
     argparser = argparse.ArgumentParser()
     argparser.add_argument("--lr", type=float, default=1e-5)
     argparser.add_argument("--seed", type=int, default=42)
@@ -158,6 +166,18 @@ if __name__ == "__main__":
     argparser.add_argument("--save-models", action="store_true")
     argparser.add_argument("--save-metrics", action="store_true")
 
+    # operation currently supports 'div' and 'add'
+    argparser.add_argument(
+        "--operation", type=str, default="div", choices=["div", "add"]
+    )
+
     args = argparser.parse_args()
 
-    main(args.lr, args.seed, args.optim_steps, args.save_models, args.save_metrics)
+    main(
+        args.lr,
+        args.seed,
+        args.optim_steps,
+        args.save_models,
+        args.save_metrics,
+        args.operation,
+    )
